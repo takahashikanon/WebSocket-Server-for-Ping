@@ -9,10 +9,20 @@ function toString(bytes, originStringCode) {
     });
 };
 
-// module付けないと参照できない！
+function getTimestamp() {
+    let date = new Date();
+    let hours = String(date.getHours()).length === 2 ? date.getHours() : '0' + String(date.getHours());
+    let minutes = String(date.getMinutes()).length === 2 ? date.getMinutes() : '0' + String(date.getMinutes());
+    let seconds = String(date.getSeconds()).length === 2 ? date.getSeconds() : '0' + String(date.getSeconds());
+    let timestamp = hours + ':' + minutes + ':' + seconds;
+
+    return timestamp;
+};
+
 module.exports = {
     pingForWindows: function (addressName = '', count = 1) {
         try {
+
             const command = `ping -n ${count} ${addressName}`;
             const data = toString(execSync(command), 'SJIS');
 
@@ -20,27 +30,24 @@ module.exports = {
             let body = data.split('\r\n')[2];
             let address = header.split(' ')[0];
             let bytes = body.split(' ')[3].replace('=', '');
-            let time = body.split(' ')[5].replace('=', '').replace('<', '');
-            let date = new Date();
-            let timestamp = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+            let time = body.split(' ')[5].replace('=', '').replace('<', '').replace('ms', '');
 
             let obj = {
                 address: address,
                 byte: bytes,
                 time: time,
-                timestamp: timestamp
+                timestamp: getTimestamp()
             };
 
             return obj;
+
         } catch {
-            let date = new Date();
-            let timestamp = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
 
             let obj = {
-                address: null,
+                address: addressName,
                 byte: null,
                 time: null,
-                timestamp: timestamp
+                timestamp: getTimestamp()
             };
 
             return obj;
@@ -48,6 +55,7 @@ module.exports = {
     },
     pingForLinux: function (addressName = '', count = 1) {
         try {
+
             const command = `ping -c ${count} ${addressName}`;
             const data = toString(execSync(command), 'UTF-8');
 
@@ -55,38 +63,27 @@ module.exports = {
             let body = data.split('\n')[1];
             let address = header.split(' ')[1];
             let bytes = header.split(' ')[3];
-            let time = body.split(' ')[6].split('=')[1];
-            let date = new Date();
-            let timestamp = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+            let time = body.split(' ')[6].split('=')[1].replace('ミリ秒', '');
 
             let obj = {
                 address: address,
                 byte: bytes,
                 time: time,
-                timestamp: timestamp
+                timestamp: getTimestamp()
             };
 
             return obj;
+
         } catch {
-            let date = new Date();
-            let timestamp = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
 
             let obj = {
-                address: null,
+                address: addressName,
                 byte: null,
                 time: null,
-                timestamp: timestamp
+                timestamp: getTimestamp()
             };
 
             return obj;
         }
     }
 };
-
-
-function windows(addressName = '', count = 1) {
-
-
-}
-
-console.log(windows('10.0.1'));
